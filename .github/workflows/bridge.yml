@@ -1,0 +1,27 @@
+name: bridge
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  bridge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download encrypted release payload
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.release_tag }}
+        run: |
+          mkdir payload
+          gh release download "$TAG" --repo "${{ github.repository }}" --dir payload
+          ls -lh payload
+      - uses: actions/upload-artifact@v4
+        with:
+          name: encrypted-bridge
+          path: payload/*
+          retention-days: 1
+          compression-level: 0
